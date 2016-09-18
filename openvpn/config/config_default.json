@@ -23,14 +23,5 @@
     "fileMaxSize": 65535,
     "path": "/etc/openvpn/openvpn-status.log"
  },
- "db": {
-    "type": "postgres",
-    "name": "openvpn",
-    "options": {
-      "socketPath": "/var/lib/mysql/mysql.sock",
-      "host": "localhost",
-      "user": "",
-      "password": ""
-    }
- }
+ "db": "postgres://localhost/openvpn"
 }
