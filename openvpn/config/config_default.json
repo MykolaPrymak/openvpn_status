@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "port": 3000,
+  "publicDir": "../client/public/",
+  "session": {
+    "secret": "lQoQtdVcVLdjfOIF/Fe1bRiEz8/mhJfFqfkSWDqSwvHU2lp6mfZdOT+BcdRAvNFVOa0VStHEkvmJtUsfBw+ETg=="
+  },
+  "auth": {
+    "saltLength": 64,
+    "iterations": 4096,
+    "keylen": 64,
+    "algoritm": "sha256"
+  },
+  "view": {
+    "path": "./openvpn/views/",
+    "engine": "jade"
+  },
+  "csrf": {
+    "tokenName": "csrfToken",
+    "redirectURL": "/"
+  },
+ "watcher": {
+    "fileMaxSize": 65535,
+    "path": "/etc/openvpn/openvpn-status.log"
+ },
+ "db": {
+    "type": "postgres",
+    "name": "openvpn",
+    "options": {
+      "socketPath": "/var/lib/mysql/mysql.sock",
+      "host": "localhost",
+      "user": "",
+      "password": ""
+    }
+ }
+}

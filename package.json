@@ -1,0 +1,31 @@
+{
+  "name": "openvpn_status",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "run": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/MykolaPrymak/openvpn_status.git"
+  },
+  "keywords": [
+    "openvpn",
+    "log"
+  ],
+  "author": "Mykola Prymak",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MykolaPrymak/openvpn_status/issues"
+  },
+  "homepage": "https://github.com/MykolaPrymak/openvpn_status#readme",
+  "dependencies": {
+    "express": "^4.14.0",
+    "jade": "^1.11.0",
+    "nconf": "^0.8.4",
+    "pg": "^6.1.0",
+    "sequelize": "^3.24.3"
+  }
+}
