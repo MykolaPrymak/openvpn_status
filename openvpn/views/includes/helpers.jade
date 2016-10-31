@@ -1,0 +1,13 @@
+-function getHumanSize(size) {
+-  var sufixes = ['b', 'Kb', 'Mb', 'Gb', 'Tb', 'Eb'],i = 0;
+-
+-  while (size >= 1024 && i < sufixes.length) {
+-    size /= 1024;
+-    i++;
+-  }
+-  // Add numbers after semicon if need
+-  if ((size % 1) != 0) {
+-    size = size.toFixed(2);
+-  }
+-  return size + ' ' + sufixes[i];
+-}

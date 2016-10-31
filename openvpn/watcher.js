@@ -17,7 +17,7 @@ function parseStatus(path, data) {
     const END_LIST = 'ROUTING TABLE';
     const START_ROUTE = 'Virtual Address,Common Name,Real Address,Last Ref';
     const END_ROUTE = 'GLOBAL STATS';
-    
+
     var isClientRow = false;
     var isRouteRow = false;
     var clientRows = [];
@@ -38,7 +38,7 @@ function parseStatus(path, data) {
                 isClientRow = true;
             }
         }
-        
+
         if (isRouteRow) {
             if (row === END_ROUTE) {
                 isRouteRow = false;
@@ -51,7 +51,7 @@ function parseStatus(path, data) {
             }
         }
     });
-    
+
     // merge info
     clientRows.forEach(function(row) {
         var name, parts;
@@ -82,7 +82,7 @@ function parseStatus(path, data) {
             var client = clients[name].find(function(client) {
                 return client.realIP === realIP;
             });
-            
+
             if (client) {
                 client.vpnIP = vpnIP;
                 client.lastUpdate = ((new Date(lastUpdate)).getTime() / 1000);
@@ -106,7 +106,7 @@ function getClientsStatus(path) {
 
 function printClientStatus(clients) {
     console.log('Clients ('+ Object.keys(clients).length + '):');
-    
+
     for (let name in clients) {
         if (!clients.hasOwnProperty(name)) continue;
         console.log(name + ':');
@@ -169,7 +169,7 @@ function updateClientStatus(data) {
             }
         })).then(function() {
             var newSessions = [];
-            
+
             for (let name in currentClients) {
                 var sessions = currentClients[name].filter(function(session) {return !session.isOld;});
                 if (sessions.length) {
@@ -210,7 +210,7 @@ function init(path) {
                 if (!timer) {
                     timer = setTimeout(function() {
                         //console.log('watch fire "', event, '" on ', filename);
-                
+
                         getClientsStatus(path).then(updateClientStatus).then(function() {
                             timer = null;
                         }, function() {

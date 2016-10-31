@@ -1,0 +1,51 @@
+include ./includes/helpers.jade
+doctype html
+html(lang="en")
+  include ./includes/head.jade
+  body
+    .containercontainer-fluid
+      include ./includes/navbar_default.jade
+
+      .container-fluid
+        .jumbotron
+          h1= client.full_name
+            span= ' (' + client.name + ')'
+          dl.dl-horizontal
+            dt First apperance:
+            dd= client.createdAt
+            dt Total traffic
+            dd RX: #{getHumanSize(client.rx)} / TX: #{getHumanSize(client.tx)}
+
+        .row
+          .col-md-12
+            h1.text-center Sessions
+               span.badge= sessions.length
+
+            table.table.table-striped.table-bordered
+              thead
+                tr
+                  th #
+                  th Active
+                  th Real IP -> VPN IP
+                  th RX
+                  th TX
+                  th Session begin
+                  th Session end
+                  th Session time
+              tbody
+              each session, idx in sessions
+                tr(class=session.active ? 'success' : 'danger')
+                  td= (idx + 1)
+                  td
+                    if session.active
+                      span.glyphicon.glyphicon-ok
+                    else
+                      span.glyphicon.glyphicon-remove
+                  td #{session.real_ip} -> #{session.vpn_ip}
+                  td= getHumanSize(session.rx)
+                  td= getHumanSize(session.tx)
+                  td= session.start_time
+                  td= session.active ? 'Active' : session.end_time
+                  td= session.duration
+
+    include ./includes/footer.jade

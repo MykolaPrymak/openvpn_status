@@ -1,34 +1,35 @@
+include ./includes/helpers.jade
 doctype html
 html(lang="en")
-  head
-    meta(charset="utf8")
-    meta(http-equiv="X-UA-Compatible", content="IE=edge,chrome=1")
-    title= pageTitle
-    link(rel="stylesheet", href="/css/public.css")
+  include ./includes/head.jade
   body
-    .main-container
-      .grid-box
-        .grid-8
-          h1.site-title OpenVPM status viewer
-        .grid-4
-          h1 Active Sessions
-          table(style="width:100%", border="1")
-            tr
-              th #
-              th Client name
-              th Real IP -> VPN IP
-              th RX
-              th TX
-              th Connected Since
-            each session, idx in sessions
-              tr
-                td= idx+1
-                td= session.client.name
-                td #{session.real_ip} -> #{session.vpn_ip}
-                td= session.tx
-                td= session.rx
-                td= new Date(session.start_time * 1000)
-    .footer
-      p ver #{version}
-      p 2011-2016
-      p Mykola Prymak
+    .containercontainer-fluid
+      include ./includes/navbar_default.jade
+
+      .container-fluid
+        .row
+          .col-md-12
+            h1.text-center Active Sessions
+               span.badge= sessions.length
+
+            table.table.table-striped.table-bordered
+              thead
+                tr
+                  th #
+                  th Client name
+                  th Real IP -> VPN IP
+                  th RX
+                  th TX
+                  th Connected Since
+              tbody
+              each session, idx in sessions
+                tr
+                  td= (idx + 1)
+                  td
+                    a(href="/clients/"+session.client.name)= session.client.name
+                  td #{session.real_ip} -> #{session.vpn_ip}
+                  td= getHumanSize(session.rx)
+                  td= getHumanSize(session.tx)
+                  td= session.start_time
+
+    include ./includes/footer.jade

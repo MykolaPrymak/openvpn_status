@@ -1,14 +1,12 @@
 'use strict';
 
 var express = require('express');
-//var bodyParser = require('body-parser');
-//var session = require('express-session');
 var jade = require('jade');
-//var compress = require('compression');
+var compress = require('compression');
+var moment = require('moment');
 
 var config = require('./config');
 var models = require('./models');
-//var modules = require('./modules');
 
 var app = express();
 
@@ -19,46 +17,161 @@ app.set('view engine', config.get('view:engine'));
 app.engine('jade', jade.__express);
 
 
-//app.use(bodyParser.urlencoded({ extended: false }));
-
-//app.use(compress());
+app.use(compress());
 
 //modules.init(app);
 
-//console.info('Express server listening on port', config.get('port'));
 
-
-
-
-
-
+function handleError(res, errorCode) {
+  return function(e) {
+      res.render('error', {
+        pageTitle: 'OpenVPN Status - Error',
+        pretty: true,
+        version: config.get('version'),
+        error: {
+          code: errorCode,
+          description: e.toString()
+        }
+      });
+  }
+}
 
 exports.init = function() {
-  app.use(express.static(config.get('publicDir')));
+  app.use(express.static(config.get('staticDir')));
 
 
   app.get('/', function(req, res, next) {
-    return models.Session.findAll({
+    if ('refresh' in req.query) {
+      models.Client.findAll().then(function(clients) {
+        if (!clients) {
+          return true;
+        }
+
+        return Promise.all(clients.map(function(client) {
+          return client.clearStats();
+        })).then(function() {
+          return models.Session.findAll({
+            where: {
+              active: false
+            }
+          }).then(function(sessions) {
+            if (!sessions || !sessions.length) {
+              return true;
+            }
+
+            return Promise.all(sessions.map(function(session) {
+              return session.updateClient();
+            }));
+          });
+        });
+      }).then(function() {
+        res.redirect("/");
+      }).catch(handleError(res, 500));
+    } else {
+      return models.Session.findAll({
         where: {
-            active: true
+          active: true
         },
         include: [{
-            model: models.Client,
-            as: 'client'
-        }]
-    }).then(function(sessions) {    
-      res.render('index', {
-        pageTitle: 'Welcome!',
+          model: models.Client,
+          as: 'client'
+        }],
+        ordrer: [
+          ['id', 'DESC'],
+        ]
+      }).then(function(sessions) {
+        res.render('index', {
+          pageTitle: 'OpenVPN Status',
+          pretty: true,
+          version: config.get('version'),
+          sessions: sessions.map(session => {
+            session = session.toJSON();
+            session.start_time = moment(session.start_time, 'X').format('YYYY/MM/DD HH:mm:ss (Z)');
+            return session;
+          })
+        });
+      });
+    }
+  });
+
+  app.get('/clients/', function(req, res, next) {
+    return models.Client.findAll({
+      ordrer: [
+        ['name', 'ASC'],
+      ]
+    }).then(function(clients) {
+      if (!clients) {
+        res.redirect('/');
+      }
+
+      res.render('clients', {
+        pageTitle: 'OpenVPN Clients',
         pretty: true,
         version: config.get('version'),
-        sessions: sessions.map(session => session.toJSON())
+        clients: clients.map(client => {
+          client = client.toJSON();
+
+          // Fix for more that 365 days
+          let total_time_format = 'HH:mm:ss';
+          if (client.total_time > (24 * 60 * 60)) {
+            total_time_format = 'DDD day(s)' + total_time_format;
+          }
+          client.total_time = moment.utc(client.total_time, 'X').format(total_time_format);
+
+          client.createdAt = moment(client.createdAt).format('YYYY/MM/DD HH:mm:ss (Z)');
+          return client;
+        })
       });
-    });
+    }).catch(handleError(res, 500));
   });
+
+  app.get('/clients/:clientName', function(req, res, next) {
+    var clientName = req.params.clientName;
+
+    return models.Client.findOne({
+      where: {
+        name: clientName
+      }
+    }).then(function(client) {
+      if (!client) {
+        res.redirect('/');
+      }
+
+      return client.getSessions({order: [['id', 'DESC']]}).then(function(sessions) {
+        res.render('client', {
+          pageTitle: 'OpenVPN Client - ' + client.name,
+          pretty: true,
+          version: config.get('version'),
+          client: client.toJSON(),
+          sessions: sessions.map(session => {
+            session = session.toJSON();
+
+            let total_time_format = 'HH:mm:ss';
+            let duration = session.duration;
+            if (duration > (24 * 60 * 60)) {
+              // We hope that sessions is shorten that year
+              total_time_format = 'DDD day(s)' + total_time_format;
+            }
+
+            session.duration = moment.utc(duration, 'X').format(total_time_format);
+            session.start_time = moment(session.start_time, 'X').format('YYYY/MM/DD HH:mm:ss (Z)');
+            session.end_time = moment((session.start_time + duration), 'X').format('YYYY/MM/DD HH:mm:ss (Z)');
+
+            return session;
+          })
+        });
+      });
+    }).catch(handleError(res, 500));
+  });
+
+  // Hanle 404. Must be last in list
+  app.all('*', function(req, res, next) {
+    res.redirect('/');
+  });
+
+  console.log('Listening on *:', config.get('port'));
+  app.listen(config.get('port'));
 }
 
 
 
-app.listen(config.get('port'));
-console.log('Listening on *:', config.get('port'));
-//console.info('EOF');

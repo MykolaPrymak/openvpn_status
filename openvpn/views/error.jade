@@ -1,0 +1,14 @@
+doctype html
+html(lang="en")
+  include ./includes/head.jade
+  body
+    .containercontainer-fluid
+      include ./includes/navbar_default.jade
+
+      .container-fluid
+        .row
+          .col-md-12        
+            h1.text-center Error #{error.code}
+            h3.text-center= error.description
+
+    include ./includes/footer.jade

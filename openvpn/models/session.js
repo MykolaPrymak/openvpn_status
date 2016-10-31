@@ -10,7 +10,7 @@ var Session = db.define('Session', {
   rx:           Sequelize.INTEGER,
   tx:           Sequelize.INTEGER,
   start_time:   Sequelize.INTEGER,
-  end_time: {
+  duration: {
                 type: Sequelize.INTEGER,
                 defaultValue: 0
             },
@@ -39,18 +39,59 @@ var Session = db.define('Session', {
 
   instanceMethods: {
     endSession: function() {
-        // If session is not yet closed
-        console.log('endSession', this.getDataValue('end_time'));
-        if (!this.getDataValue('end_time')) {
-            var maked_ip = this.getDataValue('real_ip').split('.').splice(0, 2).concat('?', '?').join('.');
-            
-            this.setDataValue('real_ip', maked_ip);
-            this.setDataValue('end_time', parseInt((new Date()).getTime() / 1000));
-            this.setDataValue('active', false);
+      // If session is not yet closed
+      if (!this.getDataValue('duration')) {
+        var masked_ip = this.getDataValue('real_ip').split('.').splice(0, 2).concat('?', '?').join('.');
+        var now = parseInt((new Date()).getTime() / 1000);
 
-            return this.save();
-        }
-        return this;
+        this.setDataValue('real_ip', masked_ip);
+        this.setDataValue('duration', (this.getDataValue('start_time') - now));
+        this.setDataValue('active', false);
+
+        var session = this;
+        var client_id = this.getDataValue('client_id');
+
+        return this.save().then(function() {
+          // Update client stats
+          var Client = require('./client');
+          return Client.findOne({
+            where: {
+              id: client_id
+            }
+          }).then(function(client) {
+            if (client) {
+              return client.updateStats(session);
+            } else {
+              return session
+            }
+          });
+
+        });
+      }
+      return this;
+    },
+    updateClient: function() {
+      if (!this.getDataValue('active')) {
+        var session = this;
+        var client_id = this.getDataValue('client_id');
+
+        return this.save().then(function() {
+          // Update client stats
+          var Client = require('./client');
+          return Client.findOne({
+            where: {
+              id: client_id
+            }
+          }).then(function(client) {
+            if (client) {
+              return client.updateStats(session);
+            } else {
+              return session
+            }
+          });
+        });
+      }
+      return this;
     }
   },
 

@@ -1,0 +1,39 @@
+include ./includes/helpers.jade
+doctype html
+html(lang="en")
+  include ./includes/head.jade
+  body
+    .containercontainer-fluid
+      include ./includes/navbar_default.jade
+
+      .container-fluid
+        .row
+          .col-md-12
+            h1.text-center Clients
+               span.badge= clients.length
+               //- small.pull-right
+                //- a(href="/?refresh")
+                  //- i.glyphicon.glyphicon-refresh
+                  //- Refresh
+
+            table.table.table-striped.table-bordered
+              thead
+                tr
+                  th #
+                  th Name
+                  th Real name
+                  th Trafic
+                  th Time
+                  th First apperance
+              tbody
+              each client, idx in clients
+                tr
+                  td= (idx + 1)
+                  td
+                    a(href="/clients/"+client.name)= client.name
+                  td= client.full_name
+                  td= getHumanSize(client.tx + client.rx)
+                  td= client.total_time
+                  td= client.createdAt
+
+    include ./includes/footer.jade

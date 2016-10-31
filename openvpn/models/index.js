@@ -7,7 +7,7 @@ var Client = require('./client');
 
 // Add relations
 Session.belongsTo(Client, {as: 'client', foreignKey: 'client_id'});
-Client.hasMany(Session, {foreignKey: 'client_id'/*, as: 'Sessions', constraints: false*/});
+Client.hasMany(Session, {foreignKey: 'client_id', as: 'Sessions', constraints: false});
 
 Client.belongsTo(Client, {as: 'parent', foreignKey: 'parent_id'});
 Client.hasMany(Client, {foreignKey: 'id'});
